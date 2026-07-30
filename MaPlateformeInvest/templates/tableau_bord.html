@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block title %}Tableau de Bord{% endblock %}
+{% block content %}
+<h2>Tableau de Bord</h2>
+
+<!-- 3 Boutons en haut -->
+<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+    <a href="/historique_depots" style="background: #e67e22; color: white; padding: 8px 12px; font-size: 11px; text-decoration: none; border-radius: 4px; font-weight: bold;">Historique Dépôts</a>
+    <button onclick="copierLien()" style="background: #27ae60; color: white; border: none; padding: 8px 12px; font-size: 11px; border-radius: 4px; font-weight: bold; cursor: pointer; width: auto;">Copier Parrainage</button>
+    <a href="/historique_retraits" style="background: #c0392b; color: white; padding: 8px 12px; font-size: 11px; text-decoration: none; border-radius: 4px; font-weight: bold;">Historique Retraits</a>
+</div>
+
+<div class="card">
+    <p><strong>Solde du compte :</strong> <span style="color: #27ae60; font-size: 20px;">{{ user.solde }} FCFA</span></p>
+    <p><strong>Niveau d'investissement :</strong> Niveau {{ user.niveau_actuel }}</p>
+    <p><strong>Total de retrait effectué :</strong> {{ user.total_retrait }} FCFA</p>
+</div>
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="/logout" style="color: #e74c3c; text-decoration: none; font-weight: bold;">Se déconnecter</a>
+</div>
+
+<script>
+function copierLien() {
+    const lien = window.location.origin + "/inscription?parrain_id=" + "{{ user.id }}";
+    navigator.clipboard.writeText(lien);
+    alert("Lien de parrainage copié avec succès !");
+}
+</script>
+{% endblock %}

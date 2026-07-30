@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}Investir{% endblock %}
+{% block content %}
+<h2>Niveaux d'Investissement</h2>
+{% if message %}
+<div style="background: #fadbd8; color: #900c3f; padding: 10px; border-radius: 4px; margin-bottom: 10px; text-align: center; font-weight: bold;">
+    {{ message }}
+</div>
+{% endif %}
+<p>Solde disponible : <strong>{{ user.solde }} FCFA</strong></p>
+
+{% for num, data in niveaux.items() %}
+<div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <strong>Niveau {{ num }}</strong> : {{ data.cout }} FCFA<br>
+        <small style="color: #27ae60;">Gain : {{ data.gain }} FCFA/jour</small>
+    </div>
+    <form method="POST" style="margin: 0;">
+        <input type="hidden" name="niveau" value="{{ num }}">
+        <button type="submit" style="background: #27ae60; padding: 6px 12px; width: auto;">Investir</button>
+    </form>
+</div>
+{% endfor %}
+{% endblock %}

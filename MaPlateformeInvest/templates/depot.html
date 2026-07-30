@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block title %}Dépôt{% endblock %}
+{% block content %}
+<h2>Recharger le compte</h2>
+<div class="card">
+    <label><strong>Choisissez l'opérateur :</strong></label>
+    <select id="operateurSelect" onchange="changerOperateur()" name="operateur" form="depotForm">
+        <option value="Orange">Orange Money</option>
+        <option value="MTN">MTN Mobile Money</option>
+    </select>
+
+    <div id="instructions" style="background: #eaf2f8; padding: 10px; border-radius: 4px; margin: 15px 0; font-size: 13px;">
+        <!-- Dynamique par JS -->
+    </div>
+
+    <form id="depotForm" method="POST">
+        <input type="hidden" name="operateur" id="inputOperateur" value="Orange">
+        <input type="number" name="montant" placeholder="Montant du dépôt (FCFA)" required>
+        <input type="text" name="telephone" placeholder="Votre numéro de téléphone" required>
+        <input type="text" name="id_transaction" placeholder="ID de transaction" required>
+        <button type="submit">Soumettre pour approbation</button>
+    </form>
+</div>
+
+<script>
+function changerOperateur() {
+    const op = document.getElementById('operateurSelect').value;
+    document.getElementById('inputOperateur').value = op;
+    const inst = document.getElementById('instructions');
+    if(op === 'Orange') {
+        inst.innerHTML = `<strong>Instructions Orange Money :</strong><br>
+        Composez l'un des codes de transaction :<br>
+        - <code>#150*11*655624223*montant#</code> (Nom : <strong>GADJI HAMAN</strong>)<br>
+        - <code>#150*11*698301900*montant#</code> (Nom : <strong>HASSANA BOUBA</strong>)`;
+    } else {
+        inst.innerHTML = `<strong>Instructions MTN Mobile Money :</strong><br>
+        Composez le code de transaction :<br>
+        - <code>*126*11*680999404#</code> (Nom : <strong>NOUHOU BOUBA</strong>)`;
+    }
+}
+changerOperateur();
+</script>
+{% endblock %}

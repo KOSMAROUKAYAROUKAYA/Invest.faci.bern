@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Plateforme d'Investissement{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding-bottom: 70px; }
+        .content { padding: 20px; max-width: 600px; margin: auto; }
+        /* Barre de menu du bas à 5 couleurs */
+        .menu-bas {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .menu-bas a {
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            flex: 1;
+            padding: 10px 0;
+        }
+        .btn-depot { color: #e67e22; }
+        .btn-investir { color: #27ae60; }
+        .btn-retrait { color: #c0392b; }
+        .btn-tableau { color: #2980b9; }
+        .btn-contact { color: #8e44ad; }
+        
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        input, select { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #2c3e50; color: white; padding: 10px; border: none; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #34495e; }
+    </style>
+</head>
+<body>
+
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- 5 Menus en bas d'écran -->
+    <div class="menu-bas">
+        <a href="/depot" class="btn-depot">DÉPÔT</a>
+        <a href="/investir" class="btn-investir">INVESTIR</a>
+        <a href="/retrait" class="btn-retrait">RETRAIT</a>
+        <a href="/tableau_bord" class="btn-tableau">TABLEAU DE BORD</a>
+        <a href="/contact" class="btn-contact">CONTACT</a>
+    </div>
+
+</body>
+</html>
