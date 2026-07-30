@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block title %}Historique Retraits{% endblock %}
+{% block content %}
+<h2>Historique de vos Retraits</h2>
+{% for r in retraits %}
+<div class="card">
+    <p>Montant Net : <strong>{{ r.montant }} FCFA</strong></p>
+    <p>Statut : <span style="color: {% if r.statut == 'Validé' %}green{% else %}orange{% endif %};">{{ r.statut }}</span></p>
+</div>
+{% else %}
+<p>Aucun retrait effectué.</p>
+{% endfor %}
+{% endblock %}

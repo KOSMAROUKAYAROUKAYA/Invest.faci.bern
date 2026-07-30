@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}Retrait{% endblock %}
+{% block content %}
+<h2>Effectuer un Retrait</h2>
+{% if message %}
+<div style="background: #f2d7d5; color: #78281f; padding: 10px; border-radius: 4px; margin-bottom: 10px; font-size: 13px;">
+    {{ message }}
+</div>
+{% endif %}
+
+<div class="card">
+    <form method="POST">
+        <input type="text" name="compte" placeholder="Numéro de compte de retrait" required>
+        <input type="number" name="montant" placeholder="Montant à retirer (2500F - 50000F)" required>
+        <button type="submit" style="background: #c0392b;">Valider le Retrait</button>
+    </form>
+</div>
+
+<div class="card" style="font-size: 12px; background: #fdfefe; color: #555;">
+    <strong>Critères importants :</strong>
+    <ol style="padding-left: 15px; margin: 5px 0;">
+        <li>Le montant minimum de retrait est de 2500 CFA et maximum 50000F.</li>
+        <li>20% des frais de retrait serviront à couvrir les pertes liées au produit.</li>
+        <li>Les retraits sont généralement disponibles sous 24 heures, mais ce délai peut atteindre 72 heures dans des circonstances exceptionnelles.</li>
+        <li>Veuillez renseigner correctement les informations de votre compte de retrait. Toute information incorrecte entraînera l'échec du retrait.</li>
+        <li>Afin de protéger les droits et intérêts de la plateforme et de ses membres, vous devez investir avant de pouvoir effectuer un retrait.</li>
+    </ol>
+</div>
+{% endblock %}
