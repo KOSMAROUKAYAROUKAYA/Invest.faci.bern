@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Administrateur</title>
+    <style>
+        body { font-family: Arial; background: #eef2f3; padding: 20px; }
+        .bloc { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; font-size: 13px; }
+        th { background: #f8f9fa; }
+        .btn-approuver { background: #27ae60; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
+        .btn-bloquer { background: #c0392b; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<h1>Panel Administrateur</h1>
+<p><a href="/login_user" style="color: #c0392b; font-weight: bold; text-decoration: none;">Se déconnecter</a></p>
+
+<!-- Bloc 1 : Validation des Dépôts -->
+<div class="bloc">
+    <h2>1. Validation des Dépôts</h2>
+    <table>
+        <tr><th>Téléphone</th><th>Opérateur</th><th>ID Transaction</th><th>Montant</th><th>Action</th></tr>
+        {% for depot, user in depots %}
+        <tr>
+            <td>{{ user.telephone }}</td>
+            <td>{{ depot.operateur }}</td>
+            <td><strong>{{ depot.id_transaction }}</strong></td>
+            <td>{{ depot.montant }} FCFA</td>
+            <td>
+                <form action="/admin/valider_depot/{{ depot.id }}" method="POST" style="margin:0;">
+                    <button class="btn-approuver">Approuver</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" style="text-align: center; color: #7f8c8d;">Aucun dépôt en attente</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<!-- Bloc 2 : Validation des Retraits -->
+<div class="bloc">
+    <h2>2. Validation des Retraits</h2>
+    <table>
+        <tr><th>Téléphone (Compte)</th><th>Montant Net</th><th>Action</th></tr>
+        {% for retrait, user in retraits %}
+        <tr>
+            <td><strong>{{ user.telephone }}</strong></td>
+            <td>{{ retrait.montant }} FCFA</td>
+            <td>
+                <form action="/admin/valider_retrait/{{ retrait.id }}" method="POST" style="margin:0;">
+                    <button class="btn-approuver">Approuver</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" style="text-align: center; color: #7f8c8d;">Aucun retrait en attente</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<!-- Bloc 3 : Liste des Investisseurs -->
+<div class="bloc">
+    <h2>3. Liste des Investisseurs</h2>
+    <table>
+        <tr><th>ID</th><th>Téléphone</th><th>Total Rechargé</th><th>Total Retiré</th><th>Solde</th><th>Action</th></tr>
+        {% for inv in investisseurs %}
+        <tr>
+            <td>{{ inv.id }}</td>
+            <td>{{ inv.telephone }}</td>
+            <td>{{ inv.total_recharge }} FCFA</td>
+            <td>{{ inv.total_retrait }} FCFA</td>
+            <td><strong>{{ inv.solde }} FCFA</strong></td>
+            <td>
+                <form action="/admin/bloquer_utilisateur/{{ inv.id }}" method="POST" style="margin:0;">
+                    <button class="btn-bloquer">{% if inv.est_bloque %}Débloquer{% else %}Bloquer{% endif %}</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+</body>
+</html>

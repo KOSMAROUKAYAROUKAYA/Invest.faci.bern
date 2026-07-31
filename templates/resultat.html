@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}Résultat{% endblock %}
+{% block content %}
+<div class="card" style="text-align: center; padding: 40px;">
+    <h3>Opération traitée</h3>
+    <p>{{ message if message else "Votre demande a été prise en compte avec succès." }}</p>
+    <br>
+    <a href="/tableau_bord" style="background: #2c3e50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Retour au Tableau de bord</a>
+</div>
+{% endblock %}
