@@ -97,6 +97,105 @@ def login_user():
       session["telephone"] = user.telephone
       return redirect(url_for("tableau_bord"))
   return render_template("login_user.html")
+from datetime import datetime
+import os
+from flask import Flask, redirect, render_template, request, session, url_for
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.secret_key = "votre_cle_secrete_ultra_securisee"
+
+# Configuration de la base de données (PostgreSQL sur Render ou SQLite en local)
+database_url = os.environ.get("DATABASE_URL")
+if database_url and database_url.startswith("postgres://"):
+  database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    database_url or "sqlite:///plateforme.db"
+)
+db = SQLAlchemy(app)
+
+
+# --- MODÈLES DE DONNÉES ---
+class Utilisateur(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  telephone = db.Column(db.String(20), unique=True, nullable=False)
+  password = db.Column(db.String(100), nullable=False)
+  solde = db.Column(db.Float, default=0.0)
+  niveau_actuel = db.Column(db.Integer, default=0)  # 0 = Aucun niveau
+  parrain_id = db.Column(db.Integer, nullable=True)
+  est_premier_depot = db.Column(db.Boolean, default=True)
+  est_bloque = db.Column(db.Boolean, default=False)
+  total_recharge = db.Column(db.Float, default=0.0)
+  total_retrait = db.Column(db.Float, default=0.0)
+
+
+class Depot(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  montant = db.Column(db.Float, nullable=False)
+  user_id = db.Column(db.Integer, nullable=False)
+  operateur = db.Column(db.String(50), nullable=False)
+  id_transaction = db.Column(db.String(100), nullable=False)
+  statut = db.Column(db.String(20), default="En attente")
+
+
+class Retrait(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  montant = db.Column(db.Float, nullable=False)  # Montant net
+  montant_brut = db.Column(db.Float, nullable=False)
+  user_id = db.Column(db.Integer, nullable=False)
+  statut = db.Column(db.String(20), default="En attente")
+  date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# --- ROUTES AUTHENTIFICATION ---
+@app.route("/")
+def index():
+  return redirect(url_for("login_user"))
+
+
+@app.route("/inscription", methods=["GET", "POST"])
+def inscription():
+  if request.method == "POST":
+    tel = request.form["telephone"]
+    pwd = request.form["password"]
+    parrain_code = request.form.get("parrain_id")
+
+    parrain = None
+    if parrain_code:
+      parrain = Utilisateur.query.filter_by(id=parrain_code).first()
+
+    new_user = Utilisateur(
+        telephone=tel, password=pwd, parrain_id=parrain.id if parrain else None
+    )
+    db.session.add(new_user)
+    db.session.commit()
+    return redirect(url_for("login_user"))
+  return render_template("inscription.html")
+
+
+@app.route("/login_user", methods=["GET", "POST"])
+def login_user():
+  if request.method == "POST":
+    tel = request.form["telephone"]
+    pwd = request.form["password"]
+
+    # Connexion Admin mise à jour
+    if tel == "kosmaRoukaya" and pwd == "15062003admiN2001":
+      session["telephone"] = "kosmaRoukaya"
+      return redirect(url_for("admin_panel"))
+
+    user = Utilisateur.query.filter_by(telephone=tel, password=pwd).first()
+    if user:
+      if user.est_bloque:
+        return (
+            "Votre compte a été bloqué suite à une infraction. Contactez"
+            " l'administrateur."
+        )
+      session["user_id"] = user.id
+      session["telephone"] = user.telephone
+      return redirect(url_for("tableau_bord"))
+  return render_template("login_user.html")
 
 
 @app.route("/logout")
@@ -233,6 +332,93 @@ def historique_depots():
 
 @app.route("/historique_retraits")
 def historique_retraits():
+  if "user_id" not in session:
+    return redirect(url_for("login_user"))
+  retraits = Retrait.query.filter_by(user_id=session["user_id"]).all()
+  return render_template("historique_retraits.html", retraits=retraits)
+
+
+# --- ESPACE ADMINISTRATEUR ---
+@app.route("/admin")
+def admin_panel():
+  if session.get("telephone") != "kosmaRoukaya":
+    return redirect(url_for("login_user"))
+
+  depots = (
+      db.session.query(Depot, Utilisateur)
+      .join(Utilisateur, Depot.user_id == Utilisateur.id)
+      .filter(Depot.statut == "En attente")
+      .all()
+  )
+  retraits = (
+      db.session.query(Retrait, Utilisateur)
+      .join(Utilisateur, Retrait.user_id == Utilisateur.id)
+      .filter(Retrait.statut == "En attente")
+      .all()
+  )
+  investisseurs = Utilisateur.query.all()
+
+  return render_template(
+      "admin.html", depots=depots, retraits=retraits, investisseurs=investisseurs
+  )
+
+
+@app.route("/admin/valider_depot/<int:id>", methods=["POST"])
+def valider_depot(id):
+  if session.get("telephone") != "kosmaRoukaya":
+    return redirect(url_for("login_user"))
+
+  depot = db.session.get(Depot, id)
+  user = db.session.get(Utilisateur, depot.user_id)
+
+  user.solde += depot.montant
+  user.total_recharge += depot.montant
+
+  if user.est_premier_depot:
+    user.solde += 1000
+    user.est_premier_depot = False
+
+  if user.parrain_id:
+    parrain = db.session.get(Utilisateur, user.parrain_id)
+    if parrain:
+      parrain.solde += depot.montant * 0.15
+
+  depot.statut = "Validé"
+  db.session.commit()
+  return redirect(url_for("admin_panel"))
+
+
+@app.route("/admin/valider_retrait/<int:id>", methods=["POST"])
+def valider_retrait(id):
+  if session.get("telephone") != "kosmaRoukaya":
+    return redirect(url_for("login_user"))
+
+  retrait = db.session.get(Retrait, id)
+  user = db.session.get(Utilisateur, retrait.user_id)
+
+  user.total_retrait += retrait.montant
+  retrait.statut = "Validé"
+  db.session.commit()
+  return redirect(url_for("admin_panel"))
+
+
+@app.route("/admin/bloquer_utilisateur/<int:id>", methods=["POST"])
+def bloquer_utilisateur(id):
+  if session.get("telephone") != "kosmaRoukaya":
+    return redirect(url_for("login_user"))
+
+  user = db.session.get(Utilisateur, id)
+  if user:
+    user.est_bloque = not user.est_bloque
+    db.session.commit()
+  return redirect(url_for("admin_panel"))
+
+
+with app.app_context():
+  db.create_all()
+
+if __name__ == "__main__":
+  app.run(debug=True)
   if "user_id" not in session:
     return redirect(url_for("login_user"))
   retraits = Retrait.query.filter_by(user_id=session["user_id"]).all()
